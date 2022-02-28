@@ -40,7 +40,7 @@ int main(void) {
 	char c, skey;
 	int ex = 0, rx = 0, tx = 0, loops = 0, rc, txcount = 0;
 	int rxto, flg, txretry;
-	clock_t timeout1;
+	time_t timeout1;
 
 	printf("File Server Emulator\n\n");
 
