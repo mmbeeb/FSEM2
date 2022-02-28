@@ -22,7 +22,7 @@ static struct aun_t {
 	uint32_t in_addr;
 	struct sockaddr_in si;
 	uint32_t rxhandle;
-	clock_t rxtime;
+	time_t rxtime;
 	uint32_t txhandle;
 } stations[AUN_MAX_STATIONS], *stnp, *stntx;
 
@@ -98,9 +98,9 @@ static int _gotdata(int ackwait) {
 		case AUN_TYPE_UNICAST:
 			//printf("UNICAST\n");
 			if (!ackwait) {
-				if ((handle > stnp->rxhandle) || (clock() > stnp->rxtime)) {
+				if ((handle > stnp->rxhandle) || (time(0) > stnp->rxtime)) {
 					stnp->rxhandle = handle;
-					stnp->rxtime = clock() + AUN_RXTIMEOUT * CLOCKS_PER_SEC;
+					stnp->rxtime = time(0) + AUN_RXTIMEOUT;
 			
 					struct ebuf_t *p = ebuf_rxfind(otherstn, port);
 					if (p) {
