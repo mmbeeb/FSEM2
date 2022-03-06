@@ -15,6 +15,8 @@
 #include <unistd.h>	//sleep()
 #include <time.h>
 #include <sys/socket.h> //for Cygwin
+#include <getopt.h>
+#include <arpa/inet.h>
 
 #include "aun.h"
 #include "ebuf.h"
@@ -36,16 +38,35 @@ int charsWaiting(int fd) {
 	return count;
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
 	char c, skey;
 	int ex = 0, rx = 0, tx = 0, loops = 0, rc, txcount = 0;
 	int rxto, flg, txretry;
 	time_t timeout1;
+	int my_stn=254;
+	in_addr_t listen_addr=INADDR_ANY;
+	struct in_addr inp;
+	int opt;
+
+	while ((opt = getopt(argc, argv, "s:a:")) != -1) {
+		switch (opt) {
+			case 's':
+				my_stn = atoi(optarg);
+				break;
+			case 'a':
+				opt=inet_pton(AF_INET,optarg,&inp);
+				listen_addr=inp.s_addr;
+				break;
+			default:
+				fprintf(stderr, "Usage: %s [-s stn_id] [-a ip.address.]\n",argv[0]);
+				exit(EXIT_FAILURE);
+		}
+	}
 
 	printf("File Server Emulator\n\n");
 
-	if (fsem_open("$.FS", 0x0400, 254, "scsi1.dat")) {
-		aun_open(254);
+	if (fsem_open("$.FS", 0x0400, my_stn, "scsi1.dat")) {
+		aun_open(my_stn,listen_addr);
 	
 		set_no_buffer();
 		do {
