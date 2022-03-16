@@ -10,3 +10,5 @@ Update 16/03/22
 You can now specify the station number using an optional argument. E.g.:
 
 ./fsem 200
+
+The default remains 254.
