@@ -4,8 +4,6 @@
 
 /* 17/09/21, some changes made to make it run in Cygwin64 */
 
-#define _POSIX_C_SOURCE 1
-
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,16 +34,26 @@ int charsWaiting(int fd) {
 	return count;
 }
 
-int main(void) {
+int main(int argc, char* argv[]) {
 	char c, skey;
 	int ex = 0, rx = 0, tx = 0, loops = 0, rc, txcount = 0;
-	int rxto, flg, txretry;
+	int rxto = 0, flg, txretry, stn = 254;
 	time_t timeout1;
 
+	if (argc == 2)
+		stn = atoi(argv[1]);
+	else if (argc > 2)
+		stn = 0;
+	
+	if (stn < 1 || stn > 254) {
+		printf("Bad parameter\n");
+		exit(0);
+	}
+	
 	printf("File Server Emulator\n\n");
 
-	if (fsem_open("$.FS", 0x0400, 254, "scsi1.dat")) {
-		aun_open(254);
+	if (fsem_open("$.FS", 0x0400, stn, "scsi1.dat")) {
+		aun_open(stn);
 	
 		set_no_buffer();
 		do {
