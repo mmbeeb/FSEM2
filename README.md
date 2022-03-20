@@ -12,3 +12,13 @@ You can now specify the station number using an optional argument. E.g.:
 ./fsem 200
 
 The default remains 254.
+
+*****
+
+Update 20/03/22
+
+A scsi image is now available to download which has been set up for the server.
+
+Unzip it into the FSEM folder.
+
+Try logging in using *I AM WELCOME
