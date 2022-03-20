@@ -17,7 +17,7 @@ The default remains 254.
 
 Update 20/03/22
 
-A scsi image is now available to download which has been set up for the server.
+A scsi disc image is now available to download which has been set up for the server.
 
 Unzip it into the FSEM folder.
 
