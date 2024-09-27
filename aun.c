@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <sys/time.h>//timeval
 #include <unistd.h>
 #include <fcntl.h>
@@ -30,13 +31,14 @@ static struct sockaddr_in si_me, si_other;
 static int mysock, slen = sizeof(si_other), rxlen;
 static uint8_t *rxbuf = NULL;
 static uint16_t mystn, otherstn;
+static uint8_t riscos_mode = 0;
 
 static void die(char *s) {
 	perror(s);
 	exit(1);
 }
 
-static void _opensock() {
+static void _opensock(in_addr_t listen_addr) {
 	//create a UDP socket
 	if ((mysock=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 		die("socket");
@@ -45,9 +47,15 @@ static void _opensock() {
 	memset((char *) &si_me, 0, sizeof(si_me));
 	
 	si_me.sin_family = AF_INET;
-	si_me.sin_port = htons(AUN_PORT_BASE + mystn);
-	si_me.sin_addr.s_addr = htonl(INADDR_ANY);
-	
+        if (listen_addr == INADDR_ANY)
+                si_me.sin_port = htons(AUN_PORT_BASE + mystn);
+        else
+        {
+                si_me.sin_port = htons(32768);
+                riscos_mode = 1;
+        }
+        si_me.sin_addr.s_addr = listen_addr;
+
 	//bind socket to port
 	if (bind(mysock, (struct sockaddr*) &si_me, sizeof(si_me)) == -1)
 		die("bind");
@@ -173,7 +181,10 @@ int aun_receiver(int ackwait) {
 			die("recvfrom()");
 	} else if (rxlen >= AUN_HDR_SIZE) {
 		//printf("Received packet from %s:%d length=%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port), rxlen);
-		otherstn = ntohs(si_other.sin_port) - AUN_PORT_BASE;
+                if (riscos_mode && ntohs(si_other.sin_port) == 32768)
+                        otherstn = ntohl(si_other.sin_addr.s_addr) & 255;
+                else
+		  otherstn = ntohs(si_other.sin_port) - AUN_PORT_BASE;
 		//printf("stn=%d\n", otherstn);
 		if (otherstn < AUN_MAX_STATIONS) {
 			if (otherstn == mystn) 
@@ -245,12 +256,12 @@ int aun_transmitter(int retry) {
 }
 
 
-int aun_open(uint16_t stn) {
+int aun_open(uint16_t stn, in_addr_t listen_addr) {
 	//printf("aun_open stn=%d\n", stn);
 
 	mystn = stn;	// remember my station number
 	ebuf_open(AUN_MAX_BUFFERS);
-	_opensock();
+	_opensock(listen_addr);
 }
 
 int aun_close(void) {

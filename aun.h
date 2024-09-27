@@ -20,7 +20,9 @@
 
 #define ECONET_MACHINEPEEK	8
 
-int aun_open(uint16_t stn);
+#include <netinet/in.h>
+
+int aun_open(uint16_t stn, in_addr_t listen_addr);
 int aun_close(void);
 int aun_receiver(int ackwait);
 int aun_transmitter(int retry);

@@ -11,11 +11,11 @@
 
 static int ebuf_count;
 static struct ebuf_t *ebufs = NULL;
-static int listen = 0;
+static int elisten = 0;
 
 void ebuf_listen(int x) {
 	//printf("ebuf_listen X = %d\n", x);
-	listen = x;
+	elisten = x;
 }
  
 void ebuf_open(int max_buffers) {
@@ -86,13 +86,13 @@ struct ebuf_t *ebuf_x(int x) {//assume x is valid
 
 struct ebuf_t *ebuf_rxfind(uint16_t stn, int port) {
 	
-	if (listen) {
-		struct ebuf_t *p = &ebufs[listen];
+	if (elisten) {
+		struct ebuf_t *p = &ebufs[elisten];
 
 		if ((p->port == 0 || p->port == port) && (p->station == 0 || p->station == stn))
 		{
-			//printf("FOUND listen=%d block=%d\n", listen, p->index);
-			listen = 0;
+			//printf("FOUND listen=%d block=%d\n", elisten, p->index);
+			elisten = 0;
 			return p;
 
 		}

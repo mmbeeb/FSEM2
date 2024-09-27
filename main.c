@@ -4,6 +4,8 @@
 
 /* 17/09/21, some changes made to make it run in Cygwin64 */
 
+#define _POSIX_C_SOURCE 1
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +15,8 @@
 #include <unistd.h>	//sleep()
 #include <time.h>
 #include <sys/socket.h> //for Cygwin
+#include <getopt.h>
+#include <arpa/inet.h>
 
 #include "aun.h"
 #include "ebuf.h"
@@ -34,26 +38,35 @@ int charsWaiting(int fd) {
 	return count;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 	char c, skey;
 	int ex = 0, rx = 0, tx = 0, loops = 0, rc, txcount = 0;
-	int rxto = 0, flg, txretry, stn = 254;
+	int rxto, flg, txretry;
 	time_t timeout1;
+	int my_stn=254;
+	in_addr_t listen_addr=INADDR_ANY;
+	struct in_addr inp;
+	int opt;
 
-	if (argc == 2)
-		stn = atoi(argv[1]);
-	else if (argc > 2)
-		stn = 0;
-	
-	if (stn < 1 || stn > 254) {
-		printf("Bad parameter\n");
-		exit(0);
+	while ((opt = getopt(argc, argv, "s:a:")) != -1) {
+		switch (opt) {
+			case 's':
+				my_stn = atoi(optarg);
+				break;
+			case 'a':
+				opt=inet_pton(AF_INET,optarg,&inp);
+				listen_addr=inp.s_addr;
+				break;
+			default:
+				fprintf(stderr, "Usage: %s [-s stn_id] [-a ip.address.]\n",argv[0]);
+				exit(EXIT_FAILURE);
+		}
 	}
-	
+
 	printf("File Server Emulator\n\n");
 
-	if (fsem_open("$.FS", 0x0400, stn, "scsi1.dat")) {
-		aun_open(stn);
+	if (fsem_open("$.FS", 0x0400, my_stn, "scsi1.dat")) {
+		aun_open(my_stn,listen_addr);
 	
 		set_no_buffer();
 		do {
